@@ -1,9 +1,4 @@
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Scanner;
-import java.util.Collections;
+import java.util.*;
 
 
 public class Ahorcado {
@@ -12,8 +7,8 @@ public class Ahorcado {
     BancoPalabras bancoPalabrasUsadas;
     HashSet<Character> letrasUsadas = new HashSet<>();
     String fraseActual;
-    ArrayList<HashMap<Character, Boolean>> letrasModeladas = new ArrayList<>();
-    ArrayList<HashMap<Character, Boolean>> letrasModeladasUsadas = new ArrayList<>();
+    ArrayList<LinkedHashMap<Integer, Character>> letrasModeladas;
+    ArrayList<LinkedHashMap<Integer, Character>> letrasModeladasUsadas;
     int puntuacionMaxima;
     int cantidadJugadores;
     ArrayList<Jugador> jugadores = new ArrayList<>();
@@ -24,39 +19,12 @@ public class Ahorcado {
         if (cantidadJugadores > 1 && cantidadJugadores < 5) {
             this.puntuacionMaxima = puntuacionMaxima;
             this.cantidadJugadores = cantidadJugadores;
-            banco = new BancoPalabras(true);
-            bancoPalabrasUsadas = new BancoPalabras(false);
+            banco = new BancoPalabras(false);
+            bancoPalabrasUsadas = new BancoPalabras(true);
             jugadores = new ArrayList<>(cantidadJugadores);
+            hacerJugadores(cantidadJugadores);
         }
     }
-
-    private void escogerFrase(BancoPalabras bancoPalabras)
-    {
-        Collections.shuffle(banco.getBancoPalabras());
-        fraseActual = banco.getBancoPalabras().getFirst();
-        bancoPalabrasUsadas.getBancoPalabras().add(banco.getBancoPalabras().removeFirst());
-    }
-
-    private void modelarFrase()
-    {
-        int cantPalabras = 0;
-        for (Character letra : fraseActual.toCharArray()) {
-            if (letra == ' ') {
-                ++cantPalabras;
-                letrasModeladas.add(
-            } else {
-                letrasUsadas.add(letra);
-            }
-        }
-        letrasModeladasUsadas = new ArrayList<>(cantPalabras);
-
-    }
-
-    private void determinarFraseTerminada()
-    {
-
-    }
-
 
     private void hacerJugadores(int cantidadJugadores)
     {
@@ -64,6 +32,72 @@ public class Ahorcado {
             jugadores.add(new Jugador("Jugador " + (i+1)));
         }
     }
+
+    public void determinarFrase()
+    {
+        int cantPalabras = 0;
+        escogerFrase(banco);
+        int contador = 0;
+
+        for (Character letra : fraseActual.toCharArray()) {
+            if (letra == ' ') {
+                ++cantPalabras;
+            }
+        }
+
+        ++cantPalabras;
+        //BANDERA
+        System.out.println("cantidad palabras " + cantPalabras);
+        System.out.println("Palabra: " + fraseActual);
+
+        letrasModeladas = new ArrayList<>(cantPalabras);
+        letrasModeladasUsadas = new ArrayList<>(cantPalabras);
+
+        for (int i = 0; i < cantPalabras; i++) {
+            letrasModeladas.add(new LinkedHashMap<>());
+            letrasModeladasUsadas.add(new LinkedHashMap<>());
+        }
+        cantPalabras = 0;
+
+        for (Character letra : fraseActual.toCharArray()) {
+            if (letra == ' ') {
+                letrasModeladas.get(cantPalabras).put(contador, letra);
+                letrasModeladasUsadas.get(cantPalabras).put(contador, ' ');
+                ++cantPalabras;
+            } else {
+                letrasModeladas.get(cantPalabras).put(contador, letra);
+                letrasModeladasUsadas.get(cantPalabras).put(contador, null);
+            }
+            ++contador;
+        }
+
+        //BANDERA 2
+        System.out.println("contador: " + contador);
+    }
+
+    private void escogerFrase(BancoPalabras bancoPalabras)
+    {
+        Collections.shuffle(bancoPalabras.getBancoPalabras());
+        fraseActual = bancoPalabras.getBancoPalabras().getFirst();
+        bancoPalabrasUsadas.getBancoPalabras().add(bancoPalabras.getBancoPalabras().removeFirst());
+    }
+
+    public void imprimirFrase()
+    {
+        System.out.println("===PALABRA A ADIVINAR===\n");
+        for (HashMap<Integer, Character> modelada : letrasModeladasUsadas) {
+            for (Character letra : modelada.values()) {
+                if (letra == null) {
+                    System.out.print("_");
+                } else {
+                    System.out.print(letra);
+                }
+            }
+        }
+    }
+
+
+
 
     private String verificarLetra(char letra, String frase)
     {
@@ -93,10 +127,49 @@ public class Ahorcado {
 
     private void colocarLetra(char letra, String frase)
     {
+        int contadorLetras = 0;
+        int contadorPalabras = 0;
+
         if (verificarLetra(letra, frase).equals("acerto")) {
             letrasUsadas.add(letra);
+            for (HashMap<Integer, Character> modelada : letrasModeladas) {
+                for (Character letraModelada : modelada.values()) {
+                    if (letraModelada.equals(' ')) {
+                        ++contadorLetras;
+                        ++contadorPalabras;
+                        break;
+                    } else if (letraModelada.equals(letra)) {
+                        letrasModeladasUsadas.get(contadorPalabras).put(contadorLetras, letraModelada);
+                    }
+                    ++contadorLetras;
+                }
+            }
         }
     }
 
+    private boolean finDelJuego()
+    {
+        return true;
+    }
 
+    public void jugar()
+    {
+        int turnoActual = 0;
+        boolean juegoTerminado = false;
+
+        while (!juegoTerminado) {
+            Jugador jugadorActual = jugadores.get(turnoActual);
+
+            System.out.println("===Turno de " + jugadorActual.getNombre() + "===");
+
+            if (turnoActual == 3) {
+                juegoTerminado = true;
+            }
+
+
+
+
+            turnoActual = (turnoActual + 1) % jugadores.size();
+        }
+    }
 }
