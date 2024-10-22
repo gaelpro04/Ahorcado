@@ -47,6 +47,7 @@ public class Ahorcado {
 
         ++cantPalabras;
         //BANDERA
+        System.out.println("=================================");
         System.out.println("cantidad palabras " + cantPalabras);
         System.out.println("Palabra: " + fraseActual);
 
@@ -73,6 +74,7 @@ public class Ahorcado {
 
         //BANDERA 2
         System.out.println("contador: " + contador);
+        System.out.println("================================");
     }
 
     private void escogerFrase(BancoPalabras bancoPalabras)
@@ -85,7 +87,7 @@ public class Ahorcado {
     public void imprimirFrase()
     {
         System.out.println("===PALABRA A ADIVINAR===\n");
-        for (HashMap<Integer, Character> modelada : letrasModeladasUsadas) {
+        for (LinkedHashMap<Integer, Character> modelada : letrasModeladasUsadas) {
             for (Character letra : modelada.values()) {
                 if (letra == null) {
                     System.out.print("_");
@@ -94,6 +96,7 @@ public class Ahorcado {
                 }
             }
         }
+        System.out.println("\n");
     }
 
 
@@ -117,20 +120,25 @@ public class Ahorcado {
     private void determinarPuntuacion(Jugador jugadorActual, char letra, String frase)
     {
         if (verificarLetra(letra, frase).equals("acerto")) {
+            System.out.println("Has ganado 3 puntos!!!");
             jugadorActual.acumularPuntuacion(3);
         } else if (verificarLetra(letra, frase).equals("acertado")) {
+            System.out.println("Has perdido 3 puntos!!!");
             jugadorActual.acumularPuntuacion(-3);
         } else {
+            System.out.println("Has perdido un punto!!!");
             jugadorActual.acumularPuntuacion(-1);
         }
     }
 
-    private void colocarLetra(char letra, String frase)
+    private void colocarLetra(char letra, String frase, Jugador jugadorActual)
     {
         int contadorLetras = 0;
         int contadorPalabras = 0;
+        determinarPuntuacion(jugadorActual, letra, frase);
 
         if (verificarLetra(letra, frase).equals("acerto")) {
+            System.out.println("Has acertado!!!");
             letrasUsadas.add(letra);
             for (HashMap<Integer, Character> modelada : letrasModeladas) {
                 for (Character letraModelada : modelada.values()) {
@@ -144,32 +152,157 @@ public class Ahorcado {
                     ++contadorLetras;
                 }
             }
+        } else if (verificarLetra(letra, frase).equals("acertado")) {
+            System.out.println("Esa palabra ya se puso!!!");
+        } else {
+            System.out.println("No está en la frase!!!");
         }
     }
 
-    private boolean finDelJuego()
+    private boolean yaHayGanador(ArrayList<Jugador> jugadores)
     {
+        for (Jugador jugador : jugadores) {
+            if (jugador.getPuntuacion() >= puntuacionMaxima) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Jugador determinarGanador(ArrayList<Jugador> jugadores)
+    {
+        for (Jugador jugador : jugadores) {
+            if (jugador.getPuntuacion() >= puntuacionMaxima) {
+                return jugador;
+            }
+        }
+        return null;
+    }
+
+    private int determinarGanadorRonda(ArrayList<Jugador> jugadores)
+    {
+
+        int comparador = jugadores.getFirst().getPuntuacion();
+
+        for (Jugador jugador : jugadores) {
+            if (jugador.getPuntuacion() >= comparador) {
+                comparador = jugador.getPuntuacion();
+            }
+        }
+
+        int index = 0;
+        for (Jugador jugador : jugadores) {
+            if (jugador.getPuntuacion() == comparador) {
+                return index;
+            }
+            ++index;
+        }
+        return -1;
+    }
+
+    private boolean seLLenoLaPalabra(ArrayList<LinkedHashMap<Integer, Character>> letrasDePalabra)
+    {
+        for (LinkedHashMap<Integer, Character> modelada : letrasDePalabra) {
+            for (Character letra : modelada.values()) {
+                if (letra == null) {
+                    return false;
+                }
+            }
+        }
         return true;
+    }
+
+    private boolean verificarLetra(String letra)
+    {
+        char letra1 = ' ';
+        if (letra.length() == 1 && Character.isLetter(letra.charAt(0))) {
+            letra1 = Character.toLowerCase(letra.charAt(0));
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private char obtenerLetra(String letra)
+    {
+        return Character.toLowerCase(letra.charAt(0));
     }
 
     public void jugar()
     {
         int turnoActual = 0;
         boolean juegoTerminado = false;
+        String letraIngresada;
+        char letra;
+        boolean adivino = false;
+        Scanner res = new Scanner(System.in);
+        determinarFrase();
 
-        while (!juegoTerminado) {
+        while (!yaHayGanador(jugadores) || !seLLenoLaPalabra(letrasModeladasUsadas)) {
             Jugador jugadorActual = jugadores.get(turnoActual);
-
             System.out.println("===Turno de " + jugadorActual.getNombre() + "===");
+            System.out.println("=Puntos para ganar: " + puntuacionMaxima + "=====\n");
 
-            if (turnoActual == 3) {
-                juegoTerminado = true;
+            System.out.println("Puntos acumulados:" + jugadorActual.getPuntuacion());
+
+            if (!seLLenoLaPalabra(letrasModeladasUsadas)) {
+
+                letraIngresada = " ";
+
+                imprimirFrase();
+                while (!verificarLetra(letraIngresada)) {
+
+                    System.out.println("Ingresa una letra: ");
+                    letraIngresada = res.next();
+                }
+
+                letra = obtenerLetra(letraIngresada);
+
+                //basandose en el juego del ahorcado, si un jugador acierta una letra
+                //el siguiente turno sigue sinedo suyo hasta que se equivoque
+                if (verificarLetra(letra, fraseActual).equals("acerto")) {
+                    adivino = true;
+                } else {
+                    adivino = false;
+                }
+                colocarLetra(letra, fraseActual, jugadorActual);
+
+
+
+            } else {
+                int indexGanador = determinarGanadorRonda(jugadores);
+                jugadores.get(indexGanador).acumularPuntuacion(5);
+                System.out.println("El " + jugadores.get(indexGanador).getNombre() + " ha ganado la ronda!!!");
+                System.out.println("Has ganado 5 puntos mas");
+                System.out.println("Puntos acumulados: " + jugadores.get(indexGanador).getPuntuacion());
+
+                System.out.println("Se escoge nueva frase...");
+                escogerFrase(banco);
+                determinarFrase();
+                letrasUsadas.clear();
+
             }
 
+            if (!adivino) {
+                turnoActual = (turnoActual + 1) % jugadores.size();
+            }
 
-
-
-            turnoActual = (turnoActual + 1) % jugadores.size();
         }
+        Jugador ganador = determinarGanador(jugadores);
+        System.out.println("El " + ganador.getNombre() + "ha ganado el juego!!!\n");
+
+        System.out.println("===Tablero de puntuaciones===");
+
+        Collections.sort(jugadores, new Comparator<Jugador>() {
+            @Override
+            public int compare(Jugador o1, Jugador o2) {
+                return Integer.compare(o1.getPuntuacion(),o2.getPuntuacion());
+            }
+        });
+
+        for (Jugador jugador : jugadores) {
+            System.out.println(jugador.getNombre() + ": " + jugador.getPuntuacion());
+        }
+
     }
 }
