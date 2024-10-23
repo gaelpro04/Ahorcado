@@ -119,8 +119,18 @@ public class Ahorcado {
     private void determinarPuntuacion(Jugador jugadorActual, char letra, String frase)
     {
         if (verificarLetra(letra, frase).equals("acerto")) {
-            System.out.println("Has ganado 3 puntos!!!");
-            jugadorActual.acumularPuntuacion(3);
+            int cantidadLetras = 0;
+
+            for (LinkedHashMap<Integer, Character> modelado : letrasModeladas) {
+                for (Character letraModelada: modelado.values()) {
+                    if (letraModelada.equals(letra)) {
+                        ++cantidadLetras;
+                    }
+                }
+            }
+
+            jugadorActual.acumularPuntuacion(3*cantidadLetras);
+            System.out.println("Has ganado " + (cantidadLetras*3) + " puntos!!!");
         } else if (verificarLetra(letra, frase).equals("acertado")) {
             System.out.println("Has perdido 3 puntos!!!");
             jugadorActual.acumularPuntuacion(-3);
