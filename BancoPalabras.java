@@ -19,7 +19,7 @@ public class BancoPalabras {
             bancoFrases = new ArrayList<>();
             String[] vectorFrases = {"ayer comi muchas papas","me gusta programar en java", "hoy me pondre a estudiar", "estoy haciendo la practica de java",
                     "el avion blanco vuela", "programar es mejor que hacer circuitos", "no tengo carro azul", "Jugar futbol me gusta mucho", "programacion orientada a objetos",
-                    "No me gusta poo"};
+                    "no me gusta poo"};
 
             //Un vez elaborado esto se mete cada elemento del vector a la colección
             bancoFrases.addAll(Arrays.asList(vectorFrases).subList(0, 10));

@@ -108,7 +108,8 @@ public class Ahorcado {
 
         } else if (letrasUsadas.contains(letra) && frase.contains(String.valueOf(letra))) {
             return "acertado";
-
+        } else if (letrasUsadas.contains(letra) && !frase.contains((String.valueOf(letra)))) {
+            return "noacertado";
         } else if (!frase.contains(String.valueOf(letra))) {
             return "erroneo";
 
@@ -134,7 +135,10 @@ public class Ahorcado {
         } else if (verificarLetra(letra, frase).equals("acertado")) {
             System.out.println("Has perdido 3 puntos!!!");
             jugadorActual.acumularPuntuacion(-3);
-        } else {
+        } else if (verificarLetra(letra, frase).equals("noacertado")) {
+            System.out.println("Has perdido 3 puntos!!!");
+            jugadorActual.acumularPuntuacion(-3);
+        } else if (verificarLetra(letra, frase).equals("erroneo")){
             System.out.println("Has perdido un punto!!!");
             jugadorActual.acumularPuntuacion(-1);
         }
@@ -162,9 +166,12 @@ public class Ahorcado {
                 }
             }
         } else if (verificarLetra(letra, frase).equals("acertado")) {
-            System.out.println("Esa palabra ya se puso!!!");
-        } else {
+            System.out.println("Esa letra ya se puso!!!");
+        } else if (verificarLetra(letra, frase).equals("noacertado")) {
+            System.out.println("Esa letra ya ha sido utilizada!!!");
+        } else if (verificarLetra(letra, frase).equals("erroneo")){
             System.out.println("No está en la frase!!!");
+            letrasUsadas.add(letra);
         }
     }
 
@@ -276,15 +283,14 @@ public class Ahorcado {
                 }
                 colocarLetra(letra, fraseActual, jugadorActual);
 
-
+                if (seLLenoLaPalabra(letrasModeladasUsadas)) {
+                    jugadorActual.acumularPuntuacion(5);
+                    System.out.println("El " + jugadorActual.getNombre() + " ha ganado la ronda!!!");
+                    System.out.println("Has ganado 5 puntos mas");
+                    System.out.println("Puntos acumulados: " + jugadorActual.getPuntuacion());
+                }
 
             } else {
-                int indexGanador = determinarGanadorRonda(jugadores);
-                jugadores.get(indexGanador).acumularPuntuacion(5);
-                System.out.println("El " + jugadores.get(indexGanador).getNombre() + " ha ganado la ronda!!!");
-                System.out.println("Has ganado 5 puntos mas");
-                System.out.println("Puntos acumulados: " + jugadores.get(indexGanador).getPuntuacion());
-
                 System.out.println("Se escoge nueva frase...");
                 escogerFrase(banco);
                 determinarFrase();
