@@ -25,12 +25,14 @@ public class Ahorcado {
     private JFrame frame;
 
     private JPanel panelPrincipal;
+    private JPanel panelLetras;
     private JPanel panelArriba;
     private JPanel panelArribaCentro;
     private JPanel panelArribaIzq;
     private JPanel panelArribaDer;
     private JPanel panelAbajo;
     private JPanel frases;
+    private JPanel panelPuntuaciones;
 
     private JLabel indicadorFraseEtiqueta;
     private JLabel puntosEtiqueta;
@@ -39,6 +41,7 @@ public class Ahorcado {
     private JLabel turnoJugador;
     private JLabel puntosJugador;
     private JLabel fraseJuego;
+    private JLabel letrasUsadasJ;
 
     private JTextField letraALlenar;
 
@@ -61,21 +64,25 @@ public class Ahorcado {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 
-        indicadorFraseEtiqueta = new JLabel("Frase a adivinar: ", SwingConstants.CENTER);
+        indicadorFraseEtiqueta = new JLabel("Adivina la frase: ", SwingConstants.CENTER);
         indicadorFraseEtiqueta.setFont(new Font("Cascadia",Font.BOLD, 14));
         estadoEtiqueta = new JLabel("Estado Juego");
-        estadoEtiqueta.setFont(new Font("Cascadia",Font.BOLD, 14));
+        estadoEtiqueta.setFont(new Font("Cascadia",Font.BOLD, 12));
         turnoJugador = new JLabel("Turno Jugador");
-        turnoJugador.setFont(new Font("Cascadia",Font.BOLD, 14));
+        turnoJugador.setFont(new Font("Cascadia",Font.BOLD, 12));
         puntosJugador = new JLabel("Puntos Jugador");
-        puntosJugador.setFont(new Font("Cascadia",Font.BOLD, 14));
+        puntosJugador.setFont(new Font("Cascadia",Font.BOLD, 12));
         ingresaEtiqueta = new JLabel("Ingresa una letra: ", SwingConstants.CENTER);
-        ingresaEtiqueta.setFont(new Font("Cascadia",Font.BOLD, 14));
+        ingresaEtiqueta.setFont(new Font("Cascadia",Font.BOLD, 12));
         fraseJuego = new JLabel("___ ____ ___ ____", SwingConstants.CENTER);
         fraseJuego.setFont(new Font("Cascadia",Font.BOLD, 14));
 
         panelPrincipal = new JPanel();
         panelPrincipal.setLayout(new BorderLayout());
+        panelLetras = new JPanel(new GridLayout(27,2));
+        panelPuntuaciones = new JPanel(new GridLayout(cantidadJugadores,1));
+        letrasUsadasJ = new JLabel("Letras usadas", SwingConstants.CENTER);
+        panelLetras.add(letrasUsadasJ);
         frases = new JPanel(new GridLayout(2,1));
         frases.add(indicadorFraseEtiqueta);
         frases.add(fraseJuego);
@@ -106,7 +113,12 @@ public class Ahorcado {
         panelAbajo.setBackground(new Color(253,253,150));
         panelAbajo.setLayout(new FlowLayout(FlowLayout.CENTER));
         letraALlenar = new JTextField(5);
-        letraALlenar.addActionListener(evento -> lecturaDeJugador());
+        letraALlenar.addActionListener(evento -> { try {
+            lecturaDeJugador();
+
+        } catch (StringIndexOutOfBoundsException e) {
+            indicadorFraseEtiqueta.setText("Debes ingresar una letra valida");
+        }});
         panelAbajo.add(ingresaEtiqueta, FlowLayout.LEFT);
         panelAbajo.add(letraALlenar);
 
@@ -114,7 +126,9 @@ public class Ahorcado {
         frame.add(panelPrincipal, BorderLayout.CENTER);
         frame.add(panelArriba, BorderLayout.NORTH);
         frame.add(panelAbajo, BorderLayout.SOUTH);
-        frame.setSize(600,300);
+        frame.add(panelLetras, BorderLayout.EAST);
+        frame.add(panelPuntuaciones, BorderLayout.WEST);
+        frame.setSize(800,400);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
@@ -353,87 +367,64 @@ public class Ahorcado {
     public void jugar()
     {
         turnoActual = 0;
-        determinarFrase();
-        System.out.println(cantidadJugadores);
         hacerFrame();
+        escogerFrase(banco);
+        determinarFrase();
         imprimirFrase();
-        actualizar(turnoActual);
+        estadoEtiqueta.setText("Puntos para ganar: " + puntuacionMaxima);
+        turnoJugador.setText("Turno: " + jugadores.get(turnoActual).getNombre());
+        puntosJugador.setText("Puntos: " + jugadores.get(turnoActual).getPuntuacion());
+
+
+
     }
 
-    private void lecturaDeJugador()
-    {
-        actualizar(turnoActual);
+    private void lecturaDeJugador(){
         Jugador jugadorActual = jugadores.get(turnoActual);
         char letra = obtenerLetra(letraALlenar.getText());
+
         if (!verificarLetra(String.valueOf(letra))) {
-            estadoEtiqueta.setText("Ingresa una letra valida");
+            indicadorFraseEtiqueta.setText("Debes ingresar una letra valida");
         } else {
-            if (!yaHayGanador(jugadores) || !seLLenoLaPalabra(letrasModeladasUsadas)) {
-                if (!seLLenoLaPalabra(letrasModeladasUsadas)) {
+            if (verificarLetra(letra, fraseActual).equals("acerto")) {
+                adivino = true;
+            } else {
+                adivino = false;
+            }
+            imprimirLetrasUsadas(letra);
+            colocarLetra(letra,fraseActual,jugadorActual);
+            imprimirFrase();
 
-                    if (verificarLetra(letra, fraseActual).equals("acerto")) {
-                        adivino = true;
-                    } else {
-                        adivino = false;
-                    }
-                    colocarLetra(letra,fraseActual,jugadorActual);
-                    imprimirFrase();
-                    actualizar(turnoActual);
 
-                    if (seLLenoLaPalabra(letrasModeladasUsadas)) {
-                        if (yaHayGanador(jugadores)) {
-                            Jugador ganador = determinarGanador(jugadores);
-                            //Aquí crearé el tablero de puntuación
-                            Collections.sort(jugadores, new Comparator<Jugador>() {
-                                @Override
-                                public int compare(Jugador o1, Jugador o2) {
-                                    return Integer.compare(o1.getPuntuacion(), o2.getPuntuacion());
-                                }
-                            });
-                            letraALlenar.setEditable(false);
-                            panelPrincipal.remove(fraseJuego);
-                            indicadorFraseEtiqueta.setText("El " + ganador.getNombre() + " ha ganado la ronda!!");
-                        } else {
-                            jugadorActual.acumularPuntuacion(5);
-                            turnoJugador.setText("El " + jugadorActual.getNombre() + " ha ganado la ronda!!");
-                            puntosJugador.setText("Puntos: " + jugadorActual.getPuntuacion());
-                            indicadorFraseEtiqueta.setText("Se escoge nueva frase...");
-                            escogerFrase(banco);
-                            determinarFrase();
-                            letrasUsadas.clear();
-                            imprimirFrase();
-                        }
+            if (yaHayGanador(jugadores) && seLLenoLaPalabra(letrasModeladasUsadas)) {
+                Jugador ganador = determinarGanador(jugadores);
 
-                    }
-                } else {
-                    indicadorFraseEtiqueta.setText("Se escoge nueva frase...");
-                    escogerFrase(banco);
-                    determinarFrase();
-                    letrasUsadas.clear();
-                }
+                indicadorFraseEtiqueta.setText("El " + ganador.getNombre() + " ha ganado!!!");
+                letraALlenar.setEnabled(false);
+                panelAbajo.remove(letraALlenar);
+                panelAbajo.remove(ingresaEtiqueta);
+                panelPuntuaciones.add(new JLabel("Puntuaciones finales"), SwingConstants.CENTER);
+                imprimirPuntuaciones(jugadores);
+            } else if (seLLenoLaPalabra(letrasModeladasUsadas)) {
+
+                indicadorFraseEtiqueta.setText("Se escogió nueva frase");
+                escogerFrase(banco);
+                determinarFrase();
+                letrasUsadas.clear();
+                imprimirFrase();
+                panelLetras.removeAll();
+                panelLetras.revalidate();
+                panelLetras.repaint();
+
+                panelLetras.add(letrasUsadasJ);
+            } else {
                 if (!adivino) {
                     turnoActual = (turnoActual + 1) % jugadores.size();
-                    System.out.println(jugadores.size());
-                    actualizar(turnoActual);
                 }
-            } else {
-                Jugador ganador = determinarGanador(jugadores);
-                indicadorFraseEtiqueta.setText("El " + ganador.getNombre() + " ha ganado la ronda!!");
-                //Aquí crearé el tablero de puntuación
-                Collections.sort(jugadores, new Comparator<Jugador>() {
-                    @Override
-                    public int compare(Jugador o1, Jugador o2) {
-                        return Integer.compare(o1.getPuntuacion(), o2.getPuntuacion());
-                    }
-                });
-            }
-            letraALlenar.setText("");
-            actualizar(turnoActual);
-            System.out.println("==Puntos jugadores");
-            for (Jugador jugador : jugadores) {
-                System.out.println(jugador.getNombre() + ": " + jugador.getPuntuacion());
+                actualizar(turnoActual);
             }
         }
+        letraALlenar.setText("");
     }
 
     private void actualizar(int turnoActual)
@@ -441,7 +432,23 @@ public class Ahorcado {
         Jugador jugadorActual = jugadores.get(turnoActual);
         turnoJugador.setText("Turno de: " + jugadorActual.getNombre());
         puntosJugador.setText("Puntos: " + jugadorActual.getPuntuacion());
-        estadoEtiqueta.setText("Puntos para ganar: " + puntuacionMaxima);
         indicadorFraseEtiqueta.setText("Frase a adivinar: ");
+    }
+
+    private void imprimirLetrasUsadas(char letra)
+    {
+        if (!letrasUsadas.contains(letra)) {
+            JLabel etiqueta = new JLabel(String.valueOf(letra), SwingConstants.CENTER);
+            etiqueta.setOpaque(true);
+            etiqueta.setBackground(new Color(207,207, 196));
+            panelLetras.add(etiqueta);
+        }
+    }
+
+    private void imprimirPuntuaciones(ArrayList<Jugador> jugadoress)
+    {
+        for (Jugador jugador : jugadoress) {
+            panelPuntuaciones.add(new JLabel(jugador.getNombre() + ": " + jugador.getPuntuacion() + " puntos"));
+        }
     }
 }
