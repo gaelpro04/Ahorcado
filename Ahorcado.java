@@ -19,6 +19,7 @@ public class Ahorcado {
     int cantidadJugadores;
     int turnoActual;
     ArrayList<Jugador> jugadores = new ArrayList<>();
+    boolean adivino;
 
     //Atributos para la interfaz
     private JFrame frame;
@@ -50,6 +51,7 @@ public class Ahorcado {
             bancoPalabrasUsadas = new BancoPalabras(true);
             jugadores = new ArrayList<>(cantidadJugadores);
             hacerJugadores(cantidadJugadores);
+            adivino = false;
         }
     }
 
@@ -235,15 +237,15 @@ public class Ahorcado {
             }
 
             jugadorActual.acumularPuntuacion(3*cantidadLetras);
-            System.out.println("Has ganado " + (cantidadLetras*3) + " puntos!!!");
+            estadoEtiqueta.setText("Has ganado " + (cantidadLetras*3) + " puntos!!!");
         } else if (verificarLetra(letra, frase).equals("acertado")) {
-            System.out.println("Has perdido 3 puntos!!!");
+            estadoEtiqueta.setText("Has perdido 3 puntos!!!");
             jugadorActual.acumularPuntuacion(-3);
         } else if (verificarLetra(letra, frase).equals("noacertado")) {
-            System.out.println("Has perdido 3 puntos!!!");
+            estadoEtiqueta.setText("Has perdido 3 puntos!!!");
             jugadorActual.acumularPuntuacion(-3);
         } else if (verificarLetra(letra, frase).equals("erroneo")){
-            System.out.println("Has perdido un punto!!!");
+            estadoEtiqueta.setText("Has perdido un punto!!!");
             jugadorActual.acumularPuntuacion(-1);
         }
     }
@@ -255,7 +257,7 @@ public class Ahorcado {
         determinarPuntuacion(jugadorActual, letra, frase);
 
         if (verificarLetra(letra, frase).equals("acerto")) {
-            System.out.println("Has acertado!!!");
+            estadoEtiqueta.setText("Has acertado!!!");
             letrasUsadas.add(letra);
             for (HashMap<Integer, Character> modelada : letrasModeladas) {
                 for (Character letraModelada : modelada.values()) {
@@ -270,11 +272,11 @@ public class Ahorcado {
                 }
             }
         } else if (verificarLetra(letra, frase).equals("acertado")) {
-            System.out.println("Esa letra ya se puso!!!");
+            estadoEtiqueta.setText("Esa letra ya se puso!!!");
         } else if (verificarLetra(letra, frase).equals("noacertado")) {
-            System.out.println("Esa letra ya ha sido utilizada!!!");
+            estadoEtiqueta.setText("Esa letra ya ha sido utilizada!!!");
         } else if (verificarLetra(letra, frase).equals("erroneo")){
-            System.out.println("No está en la frase!!!");
+            estadoEtiqueta.setText("No está en la frase!!!");
             letrasUsadas.add(letra);
         }
     }
@@ -352,26 +354,65 @@ public class Ahorcado {
     {
         turnoActual = 0;
         determinarFrase();
-        hacerJugadores(cantidadJugadores);
+        System.out.println(cantidadJugadores);
         hacerFrame();
         imprimirFrase();
-
-
-
         actualizar(turnoActual);
     }
 
     private void lecturaDeJugador()
     {
-        String letra = letraALlenar.getText();
-        System.out.println("Letra ingresada: " + letra);
-        letraALlenar.setText("");
-
-
-
         actualizar(turnoActual);
+        Jugador jugadorActual = jugadores.get(turnoActual);
+        char letra = obtenerLetra(letraALlenar.getText());
+        if (!verificarLetra(String.valueOf(letra))) {
+            estadoEtiqueta.setText("Ingresa una letra valida");
+        } else {
+            if (!yaHayGanador(jugadores) || !seLLenoLaPalabra(letrasModeladasUsadas)) {
+                if (!seLLenoLaPalabra(letrasModeladasUsadas)) {
 
+                    if (verificarLetra(letra, fraseActual).equals("acerto")) {
+                        adivino = true;
+                    } else {
+                        adivino = false;
+                    }
+                    colocarLetra(letra,fraseActual,jugadorActual);
+                    imprimirFrase();
 
+                    if (seLLenoLaPalabra(letrasModeladasUsadas)) {
+                        jugadorActual.acumularPuntuacion(5);
+                        estadoEtiqueta.setText("El " + jugadorActual.getNombre() + " ha ganado la ronda!!");
+                        puntosJugador.setText("Puntos: " + jugadorActual.getPuntuacion());
+                    }
+                } else {
+                    estadoEtiqueta.setText("Se escoge nueva frase...");
+                    escogerFrase(banco);
+                    determinarFrase();
+                    letrasUsadas.clear();
+                }
+                if (!adivino) {
+                    turnoActual = (turnoActual + 1) % jugadores.size();
+                    System.out.println(jugadores.size());
+                    actualizar(turnoActual);
+                }
+            } else {
+                Jugador ganador = determinarGanador(jugadores);
+                estadoEtiqueta.setText("El " + ganador.getNombre() + " ha ganado la ronda!!");
+                //Aquí crearé el tablero de puntuación
+                Collections.sort(jugadores, new Comparator<Jugador>() {
+                    @Override
+                    public int compare(Jugador o1, Jugador o2) {
+                        return Integer.compare(o1.getPuntuacion(), o2.getPuntuacion());
+                    }
+                });
+            }
+            letraALlenar.setText("");
+            actualizar(turnoActual);
+            System.out.println("==Puntos jugadores");
+            for (Jugador jugador : jugadores) {
+                System.out.println(jugador.getNombre() + ": " + jugador.getPuntuacion());
+            }
+        }
     }
 
     private void actualizar(int turnoActual)
@@ -380,7 +421,5 @@ public class Ahorcado {
         turnoJugador.setText("Turno de: " + jugadorActual.getNombre());
         puntosJugador.setText("Puntos: " + jugadorActual.getPuntuacion());
         estadoEtiqueta.setText("Puntos para ganar: " + puntuacionMaxima);
-
-        this.turnoActual = (turnoActual + 1) % jugadores.size();
     }
 }
