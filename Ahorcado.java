@@ -1,17 +1,45 @@
 import java.util.*;
+import javax.swing.*;
+import java.awt.*;
 
 public class Ahorcado {
 
+    //Banco
     BancoPalabras banco;
     BancoPalabras bancoPalabrasUsadas;
+
+    //Atributos para el control de las letras
     HashSet<Character> letrasUsadas = new HashSet<>();
-    String fraseActual;
     ArrayList<LinkedHashMap<Integer, Character>> letrasModeladas;
     ArrayList<LinkedHashMap<Integer, Character>> letrasModeladasUsadas;
+
+    //Atributos poara el control del juego
+    String fraseActual;
     int puntuacionMaxima;
     int cantidadJugadores;
+    int turnoActual;
     ArrayList<Jugador> jugadores = new ArrayList<>();
 
+    //Atributos para la interfaz
+    private JFrame frame;
+
+    private JPanel panelPrincipal;
+    private JPanel panelArriba;
+    private JPanel panelArribaCentro;
+    private JPanel panelArribaIzq;
+    private JPanel panelArribaDer;
+    private JPanel panelAbajo;
+    private JPanel frases;
+
+    private JLabel indicadorFraseEtiqueta;
+    private JLabel puntosEtiqueta;
+    private JLabel ingresaEtiqueta;
+    private JLabel estadoEtiqueta;
+    private JLabel turnoJugador;
+    private JLabel puntosJugador;
+    private JLabel fraseJuego;
+
+    private JTextField letraALlenar;
 
     public Ahorcado(int puntuacionMaxima, int cantidadJugadores)
     {
@@ -23,6 +51,71 @@ public class Ahorcado {
             jugadores = new ArrayList<>(cantidadJugadores);
             hacerJugadores(cantidadJugadores);
         }
+    }
+
+    private void hacerFrame()
+    {
+        frame = new JFrame("Ahorcado");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new BorderLayout());
+
+        indicadorFraseEtiqueta = new JLabel("Frase a adivinar: ", SwingConstants.CENTER);
+        indicadorFraseEtiqueta.setFont(new Font("Cascadia",Font.BOLD, 14));
+        estadoEtiqueta = new JLabel("Estado Juego");
+        estadoEtiqueta.setFont(new Font("Cascadia",Font.BOLD, 14));
+        turnoJugador = new JLabel("Turno Jugador");
+        turnoJugador.setFont(new Font("Cascadia",Font.BOLD, 14));
+        puntosJugador = new JLabel("Puntos Jugador");
+        puntosJugador.setFont(new Font("Cascadia",Font.BOLD, 14));
+        ingresaEtiqueta = new JLabel("Ingresa una letra: ", SwingConstants.CENTER);
+        ingresaEtiqueta.setFont(new Font("Cascadia",Font.BOLD, 14));
+        fraseJuego = new JLabel("___ ____ ___ ____", SwingConstants.CENTER);
+        fraseJuego.setFont(new Font("Cascadia",Font.BOLD, 14));
+
+        panelPrincipal = new JPanel();
+        panelPrincipal.setLayout(new BorderLayout());
+        frases = new JPanel(new GridLayout(2,1));
+        frases.add(indicadorFraseEtiqueta);
+        frases.add(fraseJuego);
+
+        panelPrincipal.add(frases, BorderLayout.CENTER);
+
+        panelArriba = new JPanel();
+        panelArribaCentro = new JPanel();
+        panelArribaCentro.setBackground(new Color(253,253,150));
+        panelArribaIzq = new JPanel();
+        panelArribaIzq.setBackground(new Color(253,253,150));
+        panelArribaDer = new JPanel();
+        panelArribaDer.setBackground(new Color(253,253,150));
+        panelArriba.setLayout(new BorderLayout());
+        panelArribaCentro.setLayout(new FlowLayout(FlowLayout.CENTER));
+        panelArribaIzq.setLayout(new FlowLayout(FlowLayout.LEFT));
+        panelArribaDer.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        panelArribaIzq.add(estadoEtiqueta);
+        panelArribaCentro.add(turnoJugador);
+        panelArribaDer.add(puntosJugador);
+
+        panelArriba.add(panelArribaCentro, BorderLayout.CENTER);
+        panelArriba.add(panelArribaIzq, BorderLayout.WEST);
+        panelArriba.add(panelArribaDer, BorderLayout.EAST);
+
+
+        panelAbajo = new JPanel();
+        panelAbajo.setBackground(new Color(253,253,150));
+        panelAbajo.setLayout(new FlowLayout(FlowLayout.CENTER));
+        letraALlenar = new JTextField(5);
+        letraALlenar.addActionListener(evento -> lecturaDeJugador());
+        panelAbajo.add(ingresaEtiqueta, FlowLayout.LEFT);
+        panelAbajo.add(letraALlenar);
+
+
+        frame.add(panelPrincipal, BorderLayout.CENTER);
+        frame.add(panelArriba, BorderLayout.NORTH);
+        frame.add(panelAbajo, BorderLayout.SOUTH);
+        frame.setSize(600,300);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+
     }
 
     private void hacerJugadores(int cantidadJugadores)
@@ -85,17 +178,28 @@ public class Ahorcado {
 
     public void imprimirFrase()
     {
-        System.out.println("===PALABRA A ADIVINAR===\n");
+        int palabras = 0;
+        ArrayList<Character> array = new ArrayList<>();
         for (LinkedHashMap<Integer, Character> modelada : letrasModeladasUsadas) {
+            if (palabras > 0) {
+                array.add(' ');
+            }
             for (Character letra : modelada.values()) {
                 if (letra == null) {
-                    System.out.print("_");
+                    array.add('_');
                 } else {
-                    System.out.print(letra);
+                    array.add(letra);
                 }
             }
+            palabras++;
         }
-        System.out.println("\n");
+
+        StringBuilder frase = new StringBuilder();
+        for (Character letra : array) {
+            frase.append(letra);
+            frase.append(" ");
+        }
+        fraseJuego.setText(frase.toString());
     }
 
 
@@ -246,78 +350,37 @@ public class Ahorcado {
 
     public void jugar()
     {
-        int turnoActual = 0;
-        boolean juegoTerminado = false;
-        String letraIngresada;
-        char letra;
-        boolean adivino = false;
-        Scanner res = new Scanner(System.in);
+        turnoActual = 0;
         determinarFrase();
+        hacerJugadores(cantidadJugadores);
+        hacerFrame();
+        imprimirFrase();
 
-        while (!yaHayGanador(jugadores) || !seLLenoLaPalabra(letrasModeladasUsadas)) {
-            Jugador jugadorActual = jugadores.get(turnoActual);
-            System.out.println("===Turno de " + jugadorActual.getNombre() + "===");
-            System.out.println("=Puntos para ganar: " + puntuacionMaxima + "=====\n");
 
-            System.out.println("Puntos acumulados:" + jugadorActual.getPuntuacion());
 
-            if (!seLLenoLaPalabra(letrasModeladasUsadas)) {
+        actualizar(turnoActual);
+    }
 
-                letraIngresada = " ";
+    private void lecturaDeJugador()
+    {
+        String letra = letraALlenar.getText();
+        System.out.println("Letra ingresada: " + letra);
+        letraALlenar.setText("");
 
-                imprimirFrase();
-                while (!verificarLetra(letraIngresada)) {
 
-                    System.out.println("Ingresa una letra: ");
-                    letraIngresada = res.next();
-                }
 
-                letra = obtenerLetra(letraIngresada);
+        actualizar(turnoActual);
 
-                //basandose en el juego del ahorcado, si un jugador acierta una letra
-                //el siguiente turno sigue sinedo suyo hasta que se equivoque
-                if (verificarLetra(letra, fraseActual).equals("acerto")) {
-                    adivino = true;
-                } else {
-                    adivino = false;
-                }
-                colocarLetra(letra, fraseActual, jugadorActual);
 
-                if (seLLenoLaPalabra(letrasModeladasUsadas)) {
-                    jugadorActual.acumularPuntuacion(5);
-                    System.out.println("El " + jugadorActual.getNombre() + " ha ganado la ronda!!!");
-                    System.out.println("Has ganado 5 puntos mas");
-                    System.out.println("Puntos acumulados: " + jugadorActual.getPuntuacion());
-                }
+    }
 
-            } else {
-                System.out.println("Se escoge nueva frase...");
-                escogerFrase(banco);
-                determinarFrase();
-                letrasUsadas.clear();
+    private void actualizar(int turnoActual)
+    {
+        Jugador jugadorActual = jugadores.get(turnoActual);
+        turnoJugador.setText("Turno de: " + jugadorActual.getNombre());
+        puntosJugador.setText("Puntos: " + jugadorActual.getPuntuacion());
+        estadoEtiqueta.setText("Puntos para ganar: " + puntuacionMaxima);
 
-            }
-
-            if (!adivino) {
-                turnoActual = (turnoActual + 1) % jugadores.size();
-            }
-
-        }
-        Jugador ganador = determinarGanador(jugadores);
-        System.out.println("El " + ganador.getNombre() + "ha ganado el juego!!!\n");
-
-        System.out.println("===Tablero de puntuaciones===");
-
-        Collections.sort(jugadores, new Comparator<Jugador>() {
-            @Override
-            public int compare(Jugador o1, Jugador o2) {
-                return Integer.compare(o1.getPuntuacion(),o2.getPuntuacion());
-            }
-        });
-
-        for (Jugador jugador : jugadores) {
-            System.out.println(jugador.getNombre() + ": " + jugador.getPuntuacion());
-        }
-
+        this.turnoActual = (turnoActual + 1) % jugadores.size();
     }
 }

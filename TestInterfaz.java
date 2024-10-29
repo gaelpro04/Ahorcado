@@ -22,11 +22,8 @@ public class TestInterfaz {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 
-        enunciadoJuego1 = new JLabel("frase a adivinar; ");
+        enunciadoJuego1 = new JLabel("frase a adivinar: ", SwingConstants.CENTER);
         estadoJuego = new JLabel("Estado del juego");
-        estadoJuego.setOpaque(true);
-        estadoJuego.setBackground(new Color(255,105,97));
-        estadoJuego.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
         panelPrincipal = new JPanel();
         panelPrincipal.setLayout(new BorderLayout());
@@ -45,11 +42,6 @@ public class TestInterfaz {
         lecturaDeJugador.addActionListener(evento -> lecturaDeJugador());
 
         enunciadoJuego = new JLabel("Ingresa la letra: ");
-        enunciadoJuego.setOpaque(true);
-        enunciadoJuego.setBackground(new Color(255,105,97));
-        enunciadoJuego.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
-
-
 
         panelAbajo.add(lecturaDeJugador);
         panelAbajo.add(enunciadoJuego, FlowLayout.LEFT);
@@ -58,7 +50,7 @@ public class TestInterfaz {
         frame.add(panelPrincipal, BorderLayout.CENTER);
 
 
-        frame.setSize(600, 600);
+        frame.setSize(600, 300);
         frame.setVisible(true);
         frame.setLocationRelativeTo(null);
     }
