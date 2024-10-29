@@ -378,14 +378,35 @@ public class Ahorcado {
                     }
                     colocarLetra(letra,fraseActual,jugadorActual);
                     imprimirFrase();
+                    actualizar(turnoActual);
 
                     if (seLLenoLaPalabra(letrasModeladasUsadas)) {
-                        jugadorActual.acumularPuntuacion(5);
-                        estadoEtiqueta.setText("El " + jugadorActual.getNombre() + " ha ganado la ronda!!");
-                        puntosJugador.setText("Puntos: " + jugadorActual.getPuntuacion());
+                        if (yaHayGanador(jugadores)) {
+                            Jugador ganador = determinarGanador(jugadores);
+                            //Aquí crearé el tablero de puntuación
+                            Collections.sort(jugadores, new Comparator<Jugador>() {
+                                @Override
+                                public int compare(Jugador o1, Jugador o2) {
+                                    return Integer.compare(o1.getPuntuacion(), o2.getPuntuacion());
+                                }
+                            });
+                            letraALlenar.setEditable(false);
+                            panelPrincipal.remove(fraseJuego);
+                            indicadorFraseEtiqueta.setText("El " + ganador.getNombre() + " ha ganado la ronda!!");
+                        } else {
+                            jugadorActual.acumularPuntuacion(5);
+                            turnoJugador.setText("El " + jugadorActual.getNombre() + " ha ganado la ronda!!");
+                            puntosJugador.setText("Puntos: " + jugadorActual.getPuntuacion());
+                            indicadorFraseEtiqueta.setText("Se escoge nueva frase...");
+                            escogerFrase(banco);
+                            determinarFrase();
+                            letrasUsadas.clear();
+                            imprimirFrase();
+                        }
+
                     }
                 } else {
-                    estadoEtiqueta.setText("Se escoge nueva frase...");
+                    indicadorFraseEtiqueta.setText("Se escoge nueva frase...");
                     escogerFrase(banco);
                     determinarFrase();
                     letrasUsadas.clear();
@@ -397,7 +418,7 @@ public class Ahorcado {
                 }
             } else {
                 Jugador ganador = determinarGanador(jugadores);
-                estadoEtiqueta.setText("El " + ganador.getNombre() + " ha ganado la ronda!!");
+                indicadorFraseEtiqueta.setText("El " + ganador.getNombre() + " ha ganado la ronda!!");
                 //Aquí crearé el tablero de puntuación
                 Collections.sort(jugadores, new Comparator<Jugador>() {
                     @Override
@@ -421,5 +442,6 @@ public class Ahorcado {
         turnoJugador.setText("Turno de: " + jugadorActual.getNombre());
         puntosJugador.setText("Puntos: " + jugadorActual.getPuntuacion());
         estadoEtiqueta.setText("Puntos para ganar: " + puntuacionMaxima);
+        indicadorFraseEtiqueta.setText("Frase a adivinar: ");
     }
 }
