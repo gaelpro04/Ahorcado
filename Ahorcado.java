@@ -308,33 +308,14 @@ public class Ahorcado {
 
     private Jugador determinarGanador(ArrayList<Jugador> jugadores)
     {
+        puntuacionMaxima = jugadores.getFirst().getPuntuacion();
+        Jugador ganador = null;
         for (Jugador jugador : jugadores) {
             if (jugador.getPuntuacion() >= puntuacionMaxima) {
-                return jugador;
+                ganador = jugador;
             }
         }
-        return null;
-    }
-
-    private int determinarGanadorRonda(ArrayList<Jugador> jugadores)
-    {
-
-        int comparador = jugadores.getFirst().getPuntuacion();
-
-        for (Jugador jugador : jugadores) {
-            if (jugador.getPuntuacion() >= comparador) {
-                comparador = jugador.getPuntuacion();
-            }
-        }
-
-        int index = 0;
-        for (Jugador jugador : jugadores) {
-            if (jugador.getPuntuacion() == comparador) {
-                return index;
-            }
-            ++index;
-        }
-        return -1;
+        return ganador;
     }
 
     private boolean seLLenoLaPalabra(ArrayList<LinkedHashMap<Integer, Character>> letrasDePalabra)
@@ -383,7 +364,8 @@ public class Ahorcado {
         }
     }
 
-    private void lecturaDeJugador(){
+    private void lecturaDeJugador()
+    {
         Jugador jugadorActual = jugadores.get(turnoActual);
         char letra = obtenerLetra(letraALlenar.getText());
 
@@ -401,6 +383,11 @@ public class Ahorcado {
 
 
             if (yaHayGanador(jugadores) && seLLenoLaPalabra(letrasModeladasUsadas)) {
+
+                estadoEtiqueta.setText("El " + jugadorActual.getNombre() + " ha ganado la ronda, +5 puntos");
+                jugadorActual.acumularPuntuacion(5);
+                actualizar(turnoActual);
+
                 Jugador ganador = determinarGanador(jugadores);
 
                 indicadorFraseEtiqueta.setText("El " + ganador.getNombre() + " ha ganado!!!");
@@ -410,6 +397,10 @@ public class Ahorcado {
                 panelPuntuaciones.add(new JLabel("Puntuaciones finales", SwingConstants.CENTER));
                 imprimirPuntuaciones(jugadores);
             } else if (seLLenoLaPalabra(letrasModeladasUsadas)) {
+
+                estadoEtiqueta.setText("El " + jugadorActual.getNombre() + " ha ganado la ronda, +5 puntos");
+                jugadorActual.acumularPuntuacion(5);
+                actualizar(turnoActual);
 
                 indicadorFraseEtiqueta.setText("Se escogió nueva frase");
                 escogerFrase(banco);
@@ -437,6 +428,7 @@ public class Ahorcado {
         turnoJugador.setText("Turno de: " + jugadorActual.getNombre());
         puntosJugador.setText("Puntos: " + jugadorActual.getPuntuacion());
         indicadorFraseEtiqueta.setText("Frase a adivinar: ");
+        imprimirPuntuaciones(jugadores);
     }
 
     private void imprimirLetrasUsadas(char letra)
@@ -451,6 +443,8 @@ public class Ahorcado {
 
     private void imprimirPuntuaciones(ArrayList<Jugador> jugadoress)
     {
+        panelPuntuaciones.removeAll();
+
         for (Jugador jugador : jugadoress) {
             JLabel jugadorEtiqueta = new JLabel(jugador.getNombre() + ": " + jugador.getPuntuacion() + " puntos", SwingConstants.CENTER);
             jugadorEtiqueta.setOpaque(true);
