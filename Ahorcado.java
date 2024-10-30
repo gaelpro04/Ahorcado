@@ -5,21 +5,22 @@ import java.awt.*;
 public class Ahorcado {
 
     //Banco
-    BancoPalabras banco;
-    BancoPalabras bancoPalabrasUsadas;
+    private BancoPalabras banco;
+    private BancoPalabras bancoPalabrasUsadas;
 
     //Atributos para el control de las letras
-    HashSet<Character> letrasUsadas = new HashSet<>();
-    ArrayList<LinkedHashMap<Integer, Character>> letrasModeladas;
-    ArrayList<LinkedHashMap<Integer, Character>> letrasModeladasUsadas;
+    private HashSet<Character> letrasUsadas = new HashSet<>();
+    private ArrayList<LinkedHashMap<Integer, Character>> letrasModeladas;
+    private ArrayList<LinkedHashMap<Integer, Character>> letrasModeladasUsadas;
 
     //Atributos poara el control del juego
-    String fraseActual;
-    int puntuacionMaxima;
-    int cantidadJugadores;
-    int turnoActual;
-    ArrayList<Jugador> jugadores = new ArrayList<>();
-    boolean adivino;
+    private String fraseActual;
+    private int puntuacionMaxima;
+    private int cantidadJugadores;
+    private int turnoActual;
+    private ArrayList<Jugador> jugadores = new ArrayList<>();
+    private boolean adivino;
+    private boolean parametrosValidos;
 
     //Atributos para la interfaz
     private JFrame frame;
@@ -35,7 +36,6 @@ public class Ahorcado {
     private JPanel panelPuntuaciones;
 
     private JLabel indicadorFraseEtiqueta;
-    private JLabel puntosEtiqueta;
     private JLabel ingresaEtiqueta;
     private JLabel estadoEtiqueta;
     private JLabel turnoJugador;
@@ -55,6 +55,9 @@ public class Ahorcado {
             jugadores = new ArrayList<>(cantidadJugadores);
             hacerJugadores(cantidadJugadores);
             adivino = false;
+            parametrosValidos = true;
+        } else {
+            parametrosValidos = false;
         }
     }
 
@@ -80,7 +83,7 @@ public class Ahorcado {
         panelPrincipal = new JPanel();
         panelPrincipal.setLayout(new BorderLayout());
         panelLetras = new JPanel(new GridLayout(27,2));
-        panelPuntuaciones = new JPanel(new GridLayout(cantidadJugadores,1));
+        panelPuntuaciones = new JPanel(new GridLayout(20,2));
         letrasUsadasJ = new JLabel("Letras usadas", SwingConstants.CENTER);
         panelLetras.add(letrasUsadasJ);
         frases = new JPanel(new GridLayout(2,1));
@@ -366,17 +369,20 @@ public class Ahorcado {
 
     public void jugar()
     {
-        turnoActual = 0;
-        hacerFrame();
-        escogerFrase(banco);
-        determinarFrase();
-        imprimirFrase();
-        estadoEtiqueta.setText("Puntos para ganar: " + puntuacionMaxima);
-        turnoJugador.setText("Turno: " + jugadores.get(turnoActual).getNombre());
-        puntosJugador.setText("Puntos: " + jugadores.get(turnoActual).getPuntuacion());
-
-
-
+        if (parametrosValidos) {
+            turnoActual = 0;
+            hacerFrame();
+            escogerFrase(banco);
+            determinarFrase();
+            imprimirFrase();
+            estadoEtiqueta.setText("Puntos para ganar: " + puntuacionMaxima);
+            turnoJugador.setText("Turno: " + jugadores.get(turnoActual).getNombre());
+            puntosJugador.setText("Puntos: " + jugadores.get(turnoActual).getPuntuacion());
+        } else {
+            hacerFrame();
+            letraALlenar.setEnabled(false);
+            indicadorFraseEtiqueta.setText("Has ingresado un parametro mal...");
+        }
     }
 
     private void lecturaDeJugador(){
@@ -403,7 +409,7 @@ public class Ahorcado {
                 letraALlenar.setEnabled(false);
                 panelAbajo.remove(letraALlenar);
                 panelAbajo.remove(ingresaEtiqueta);
-                panelPuntuaciones.add(new JLabel("Puntuaciones finales"), SwingConstants.CENTER);
+                panelPuntuaciones.add(new JLabel("Puntuaciones finales", SwingConstants.CENTER));
                 imprimirPuntuaciones(jugadores);
             } else if (seLLenoLaPalabra(letrasModeladasUsadas)) {
 
@@ -448,7 +454,11 @@ public class Ahorcado {
     private void imprimirPuntuaciones(ArrayList<Jugador> jugadoress)
     {
         for (Jugador jugador : jugadoress) {
-            panelPuntuaciones.add(new JLabel(jugador.getNombre() + ": " + jugador.getPuntuacion() + " puntos"));
+            JLabel jugadorEtiqueta = new JLabel(jugador.getNombre() + ": " + jugador.getPuntuacion() + " puntos", SwingConstants.CENTER);
+            jugadorEtiqueta.setOpaque(true);
+            jugadorEtiqueta.setBackground(new Color(207,207,196));
+
+            panelPuntuaciones.add(jugadorEtiqueta);
         }
     }
 }
