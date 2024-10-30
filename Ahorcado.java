@@ -16,7 +16,6 @@ public class Ahorcado {
     //Atributos poara el control del juego
     private String fraseActual;
     private int puntuacionMaxima;
-    private int cantidadJugadores;
     private int turnoActual;
     private ArrayList<Jugador> jugadores = new ArrayList<>();
     private boolean adivino;
@@ -49,7 +48,6 @@ public class Ahorcado {
     {
         if (cantidadJugadores > 1 && cantidadJugadores < 5) {
             this.puntuacionMaxima = puntuacionMaxima;
-            this.cantidadJugadores = cantidadJugadores;
             banco = new BancoPalabras(false);
             bancoPalabrasUsadas = new BancoPalabras(true);
             jugadores = new ArrayList<>(cantidadJugadores);
