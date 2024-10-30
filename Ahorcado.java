@@ -19,10 +19,11 @@ public class Ahorcado {
     private int turnoActual;
     private ArrayList<Jugador> jugadores = new ArrayList<>();
     private boolean adivino;
-    private boolean parametrosValidos;
-
+    private boolean datoBandera;
+    private int cantidadJugadores;
     //Atributos para la interfaz
     private JFrame frame;
+    private JFrame frameParametros;
 
     private JPanel panelPrincipal;
     private JPanel panelLetras;
@@ -41,23 +42,52 @@ public class Ahorcado {
     private JLabel puntosJugador;
     private JLabel fraseJuego;
     private JLabel letrasUsadasJ;
+    private JLabel parametrosEtiqueta;
 
     private JTextField letraALlenar;
+    private JTextField cantJugadores;
 
-    public Ahorcado(int puntuacionMaxima, int cantidadJugadores)
+    public Ahorcado()
     {
-        if (cantidadJugadores > 1 && cantidadJugadores < 5) {
-            this.puntuacionMaxima = puntuacionMaxima;
+        frameParametros = new JFrame("Ahorcado");
+        frameParametros.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frameParametros.setLayout(new BorderLayout());
+        datoBandera = true;
+
+        cantJugadores = new JTextField();
+        cantJugadores.setPreferredSize(new Dimension(200, 30));
+        cantJugadores.addActionListener(evento -> parametros());
+        parametrosEtiqueta = new JLabel("Ingresa la cantidad de jugadores");
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 15));
+        panel.add(parametrosEtiqueta);
+        panel.add(cantJugadores);
+
+        frameParametros.add(panel);
+        frameParametros.setVisible(true);
+        frameParametros.setLocationRelativeTo(null);
+        frameParametros.setSize(400,200);
+    }
+
+    private void parametros()
+    {
+        if (datoBandera) {
+            cantidadJugadores = Integer.parseInt(cantJugadores.getText());
+            datoBandera = false;
+            parametrosEtiqueta.setText("Ingresa la cantidad máxima de puntos");
+            cantJugadores.setText("");
+        } else {
+            puntuacionMaxima = Integer.parseInt(cantJugadores.getText());
+            cantJugadores.setText("");
+            frameParametros.dispose();
             banco = new BancoPalabras(false);
             bancoPalabrasUsadas = new BancoPalabras(true);
             jugadores = new ArrayList<>(cantidadJugadores);
             hacerJugadores(cantidadJugadores);
             adivino = false;
-            parametrosValidos = true;
-        } else {
-            parametrosValidos = false;
+            jugar();
         }
     }
+
 
     private void hacerFrame()
     {
@@ -348,7 +378,7 @@ public class Ahorcado {
 
     public void jugar()
     {
-        if (parametrosValidos) {
+        if (cantidadJugadores > 1 && cantidadJugadores < 5) {
             turnoActual = 0;
             hacerFrame();
             escogerFrase(banco);
